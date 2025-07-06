@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --black: #050406;
+  --brunswick-green: #0F4335;
+  --rose-quartz: #B99FAF;
+  --black-2: #050103;
+  --black-3: #000000;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Optional: for gradient experimentation */
+:root {
+  --gradient-main: radial-gradient(#050406, #0F4335, #B99FAF, #050103, #000000);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer utilities {
+  .bg-black-custom {
+    background-color: var(--black);
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  .text-neon-green {
+    color: #00ffa3;
+  }
+
+  .bg-brunswick {
+    background-color: var(--brunswick-green);
+  }
+
+  .bg-rose {
+    background-color: var(--rose-quartz);
+  }
+
+  .text-black-custom {
+    color: var(--black);
+  }
+
+  .text-rose {
+    color: var(--rose-quartz);
+  }
+
+  .border-neon {
+    border: 1px solid var(--rose-quartz);
+  }
+
+  .glow-box {
+    box-shadow: 0 0 10px var(--rose-quartz), 0 0 30px var(--brunswick-green);
+  }
+
+  .bg-splash-gradient {
+    background-image: var(--gradient-main);
+    background-size: cover;
+    background-position: center;
+  }
 }
