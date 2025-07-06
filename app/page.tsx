@@ -1,6 +1,7 @@
 "use client"
 
 import TokenImageDropzone from "@/components/Input/ImageDropzone";
+import MintActivities from "@/components/MintActivities";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,11 +24,14 @@ export default function Home() {
     <div className="container mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           {/* Left Side */}
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <div className="text-8xl font-bold text-white">L</div>
-              <p className="text-2xl text-gray-400 font-light">No KYC. No Lambo. Just splash.</p>
+          <div className="flex flex-col h-full justify-between ">
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <div className="text-8xl font-bold text-white">L</div>
+                <p className="text-2xl text-gray-400 font-light">No KYC. No Lambo. Just splash.</p>
+              </div>
             </div>
+            <MintActivities />
           </div>
 
           {/* Right Side - Token Creation Form */}
