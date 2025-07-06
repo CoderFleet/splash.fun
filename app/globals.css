@@ -22,6 +22,10 @@
     color: #00ffa3;
   }
 
+  .bg-neon-pink {
+    background-color: #f4388d;
+  }
+
   .bg-brunswick {
     background-color: var(--brunswick-green);
   }
@@ -51,4 +55,8 @@
     background-size: cover;
     background-position: center;
   }
+}
+
+.wallet-adapter-button-trigger {
+  @apply bg-[#f4388d] text-white hover:bg-green-500 rounded-4xl px-4 py-2 font-semibold;
 }

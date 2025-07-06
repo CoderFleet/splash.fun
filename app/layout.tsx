@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import Navbar from "@/components/navigation/Navbar";
+import { WalletContextProvider } from "@/components/Wallet/WalletProvider";
 import "./globals.css";
 
 const grotesk = Space_Grotesk({
@@ -23,8 +24,10 @@ export default function RootLayout({
       <body
         className={`${grotesk.className} antialiased bg-black-custom`}
       >
-        <Navbar />
-        {children}
+        <WalletContextProvider>
+          <Navbar />
+          {children}
+        </WalletContextProvider>
       </body>
     </html>
   );

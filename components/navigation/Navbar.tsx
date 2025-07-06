@@ -1,5 +1,5 @@
 import Logo from "../Branding/logo"
-import Image from 'next/image'
+import ConnectWalletButton from "../Wallet/ConnectWalletButton"
 
 export default function Navbar() {
     return (
@@ -11,9 +11,10 @@ export default function Navbar() {
             </div>
 
             {/* Side Tools */}
-            <div className="text-white flex flex-row gap-4">
+            <div className="text-white flex flex-row gap-4 items-center">
                 <span className="font-medium text-[16px]">FAQ</span>
-                <button>Connect Wallet</button>
+                {/* <button>Connect Wallet</button> */}
+                <ConnectWalletButton />
             </div>
         </nav>
     )
