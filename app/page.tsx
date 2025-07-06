@@ -105,7 +105,7 @@ export default function Home() {
             {/* Launch Button */}
             <Button className="w-full relative bg-black border-2 border-transparent p-[2px] rounded-full overflow-hidden group hover:scale-105 transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-green-500 to-pink-500 animate-pulse"></div>
-              <span className="relative bg-black text-white font-semibold py-3 px-6 rounded-full w-full block group-hover:bg-gray-900 transition-colors duration-300 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:via-green-400 group-hover:to-pink-400">
+              <span className="relative bg-black text-white font-semibold py-5 px-6 rounded-full w-full block group-hover:bg-gray-900 transition-colors duration-300 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:via-green-400 group-hover:to-pink-400">
                 LAUNCH MY TOKEN
               </span>
             </Button>
