@@ -53,9 +53,8 @@ export default function Home() {
         </div>
 
         {/* Right Side - Token Creation Form */}
-        <div className="bg-black-custom border border-[#f4388d64] rounded-2xl p-8 space-y-6 shadow-[0px_0px_13px_-2px_#f4388d]">
+        <form  onSubmit={handleSubmit(onSubmit)} className="bg-black-custom border border-[#f4388d64] rounded-2xl p-8 space-y-6 shadow-[0px_0px_13px_-2px_#f4388d]">
           {/* Token Name */}
-          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-2">
               <Label htmlFor="tokenName" className="text-gray-300 text-sm">
                 Token Name
@@ -145,14 +144,13 @@ export default function Home() {
             {/* <TokenImageDropzone /> */}
 
             {/* Launch Button */}
-            <Button className="w-full relative bg-black border-2 border-transparent p-[2px] rounded-full overflow-hidden group hover:scale-105 transition-all duration-300">
+            <Button type="submit" className="w-full relative bg-black border-2 border-transparent p-[2px] rounded-full overflow-hidden group hover:scale-105 transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-green-500 to-pink-500 animate-pulse"></div>
               <span className="relative bg-black text-white font-semibold py-5 px-6 rounded-full w-full block group-hover:bg-gray-900 transition-colors duration-300 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:via-green-400 group-hover:to-pink-400">
                 LAUNCH MY TOKEN
               </span>
             </Button>
-          </form>
-        </div>
+        </form>
       </div>
     </div>
   );
