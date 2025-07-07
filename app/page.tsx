@@ -1,7 +1,7 @@
 "use client";
 
 import TokenImageDropzone from "@/components/Input/ImageDropzone";
-import MintActivities from "@/components/MintActivities";
+import MintActivities from "@/components/MintActivities/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
 import { launchToken } from "@/lib/solana/tokenService";
 import { useRouter } from "next/navigation";
+import { useMintLog } from "@/contexts/MintLogContext";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +23,8 @@ export default function Home() {
   } | null>(null);
 
   const router = useRouter();
+
+  const { log, clear } = useMintLog();
 
   const {
     register,
@@ -38,6 +41,7 @@ export default function Home() {
 
   const onSubmit = async (data: LaunchFormInputs) => {
     // console.log("Valid Form Data:", data);
+    clear();
     setIsLoading(true);
     setError(null);
     setSuccess(null);
@@ -45,7 +49,7 @@ export default function Home() {
     try {
       console.log("Valid Form Data:", data);
 
-      const result = await launchToken(data, connection, wallet);
+      const result = await launchToken(data, connection, wallet, log);
 
       setSuccess(result);
       router.push(
@@ -60,6 +64,11 @@ export default function Home() {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
       setError(errorMessage);
+      log({
+        time: new Date().toISOString(),
+        type: "ERROR",
+        status: (err as Error).message || "Unknown error",
+      });
       reset();
     } finally {
       reset();

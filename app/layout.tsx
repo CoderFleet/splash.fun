@@ -3,6 +3,7 @@ import { Space_Grotesk } from "next/font/google";
 import Navbar from "@/components/navigation/Navbar";
 import { WalletContextProvider } from "@/components/Wallet/WalletProvider";
 import "./globals.css";
+import { MintLogProvider } from "@/contexts/MintLogContext";
 
 const grotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -26,7 +27,9 @@ export default function RootLayout({
       >
         <WalletContextProvider>
           <Navbar />
+          <MintLogProvider>
           {children}
+          </MintLogProvider>
         </WalletContextProvider>
       </body>
     </html>

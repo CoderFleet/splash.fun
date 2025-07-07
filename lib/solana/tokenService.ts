@@ -1,4 +1,10 @@
-import { Connection, Keypair, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
 import {
   createAssociatedTokenAccountInstruction,
   createInitializeMetadataPointerInstruction,
@@ -18,8 +24,11 @@ import {
 } from "@solana/spl-token-metadata";
 import { pinFileToIPFS } from "@/lib/pinata/pinata";
 import { TokenMetadata, LaunchFormInputs } from "@/lib/types/token";
+import { useMintLog } from "@/contexts/MintLogContext";
 
-export async function createTokenMetadata(data: LaunchFormInputs): Promise<string> {
+export async function createTokenMetadata(
+  data: LaunchFormInputs
+): Promise<string> {
   let cid = "";
   if (data.image) {
     cid = await pinFileToIPFS(data.image);
@@ -45,15 +54,37 @@ export async function createTokenMetadata(data: LaunchFormInputs): Promise<strin
 export async function launchToken(
   data: LaunchFormInputs,
   connection: Connection,
-  wallet: { publicKey: PublicKey | null; sendTransaction: Function }
+  wallet: { publicKey: PublicKey | null; sendTransaction: Function },
+  log: ReturnType<typeof useMintLog>["log"]
 ) {
+  const time = () => new Date().toISOString();
   if (!wallet.publicKey) {
+    log({
+      time: time(),
+      type: "ERROR",
+      status: "Wallet not connected",
+    });
     throw new Error("Wallet not connected");
   }
 
+  log({ time: time(), type: "INFO", message: "Pinning metadata to IPFS..." });
+
   const metadataUri = await createTokenMetadata(data);
 
+  log({
+    time: time(),
+    type: "INFO",
+    message: `Metadata pinned at: ${metadataUri}`,
+  });
+
   const mintKeypair = Keypair.generate();
+
+  log({
+    time: time(),
+    type: "MINT",
+    hash: mintKeypair.publicKey.toBase58(),
+    message: "Generated mint keypair",
+  });
 
   const metadata: SplTokenMetadata = {
     mint: mintKeypair.publicKey,
@@ -69,6 +100,8 @@ export async function launchToken(
   const lamports = await connection.getMinimumBalanceForRentExemption(
     mintLen + metadataLen
   );
+
+  log({ time: time(), type: "TXN", status: "Creating Mint Account" });
 
   const transaction = new Transaction().add(
     SystemProgram.createAccount({
@@ -109,7 +142,14 @@ export async function launchToken(
   ).blockhash;
   transaction.partialSign(mintKeypair);
 
-  await wallet.sendTransaction(transaction, connection);
+  const sig1 = await wallet.sendTransaction(transaction, connection);
+  log({
+    time: time(),
+    type: "TXN",
+    hash: sig1,
+    status: "Mint Account Created",
+  });
+
   console.log(`Token mint created at ${mintKeypair.publicKey.toBase58()}`);
 
   const associatedToken = getAssociatedTokenAddressSync(
@@ -129,7 +169,13 @@ export async function launchToken(
     )
   );
 
-  await wallet.sendTransaction(transaction2, connection);
+  const sig2 = await wallet.sendTransaction(transaction2, connection);
+  log({
+    time: time(),
+    type: "TXN",
+    hash: sig2,
+    status: "Created Associated Token Account",
+  });
 
   const transaction3 = new Transaction().add(
     createMintToInstruction(
@@ -142,9 +188,25 @@ export async function launchToken(
     )
   );
 
-  await wallet.sendTransaction(transaction3, connection);
+  const sig3 = await wallet.sendTransaction(transaction3, connection);
 
   const actualSupply = data.supply / Math.pow(10, data.decimals);
+
+  log({
+    time: time(),
+    type: "MINT",
+    hash: sig3,
+    amount: actualSupply.toLocaleString(),
+    token: data.symbol,
+    status: "Minted tokens to wallet",
+  });
+
+  log({
+    time: time(),
+    type: "INFO",
+    message: `Mint complete at: ${mintKeypair.publicKey.toBase58()}`,
+  });
+
   console.log(`Minted ${actualSupply} tokens to:`, associatedToken.toBase58());
 
   return {
