@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { ChevronDown, ArrowLeft, HelpCircle, Sparkles } from "lucide-react"
-import { motion, AnimatePresence, useInView } from "framer-motion"
-import { useRef } from "react"
+import { useEffect, useState } from "react";
+import { Card } from "@/components/ui/card";
+import { ChevronDown, ArrowLeft, HelpCircle, Sparkles } from "lucide-react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
+import { useRef } from "react";
 
 interface FAQItem {
-  question: string
-  answer: string
+  question: string;
+  answer: string;
 }
 
 const faqData: FAQItem[] = [
@@ -62,18 +62,24 @@ const faqData: FAQItem[] = [
     answer:
       "Yes, if you retain the necessary authorities, you can burn tokens to reduce the total supply. This is an irreversible action. You can also revoke mint authority to prevent future token creation, making your token's supply permanently fixed.",
   },
-]
+];
 
-interface FAQPageProps {
-  onBack: () => void
-}
+const FloatingParticle = ({ delay = 0 }: { delay?: number }) => {
+  const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
 
-const FloatingParticle = ({ delay = 0 }: { delay?: number }) => (
-  <motion.div
+  useEffect(() => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    setStartX(Math.random() * width);
+    setStartY(height + 10);
+  }, []);
+  return <motion.div
     className="absolute w-1 h-1 bg-green-400 rounded-full opacity-30"
     initial={{
-      x: Math.random() * window.innerWidth,
-      y: window.innerHeight + 10,
+      x: Math.random() * startX,
+      y: startY + 10,
       opacity: 0,
     }}
     animate={{
@@ -87,8 +93,8 @@ const FloatingParticle = ({ delay = 0 }: { delay?: number }) => (
       repeat: Number.POSITIVE_INFINITY,
       ease: "linear",
     }}
-  />
-)
+  />;
+};
 
 const FAQItem = ({
   item,
@@ -96,13 +102,13 @@ const FAQItem = ({
   isOpen,
   onToggle,
 }: {
-  item: FAQItem
-  index: number
-  isOpen: boolean
-  onToggle: () => void
+  item: FAQItem;
+  index: number;
+  isOpen: boolean;
+  onToggle: () => void;
 }) => {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
     <motion.div
@@ -125,19 +131,16 @@ const FAQItem = ({
       whileHover={{
         scale: 1.02,
         transition: { duration: 0.2 },
-      }}
-    >
+      }}>
       <Card className="bg-gray-950 border border-gray-800 hover:border-green-400/50 transition-all duration-300 rounded-xl overflow-hidden backdrop-blur-sm">
         <motion.button
           onClick={onToggle}
           className="w-full p-6 text-left flex items-center justify-between group"
           whileHover={{ backgroundColor: "rgba(17, 24, 39, 0.8)" }}
-          whileTap={{ scale: 0.995 }}
-        >
+          whileTap={{ scale: 0.995 }}>
           <motion.h3
             className="text-lg font-semibold text-white pr-4 group-hover:text-green-400 transition-colors duration-300"
-            layout
-          >
+            layout>
             {item.question}
           </motion.h3>
           <motion.div
@@ -152,8 +155,7 @@ const FAQItem = ({
               type: "spring",
               stiffness: 200,
             }}
-            whileHover={{ scale: 1.2 }}
-          >
+            whileHover={{ scale: 1.2 }}>
             <ChevronDown className="w-5 h-5 flex-shrink-0" />
           </motion.div>
         </motion.button>
@@ -180,28 +182,24 @@ const FAQItem = ({
                 duration: 0.4,
                 ease: [0.04, 0.62, 0.23, 0.98],
               }}
-              className="overflow-hidden"
-            >
+              className="overflow-hidden">
               <motion.div
                 className="px-6 pb-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-              >
+                transition={{ duration: 0.3, delay: 0.1 }}>
                 <motion.div
                   className="border-t border-gray-800 pt-4"
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.4, delay: 0.2 }}
-                  style={{ originX: 0 }}
-                >
+                  style={{ originX: 0 }}>
                   <motion.p
                     className="text-gray-300 leading-relaxed"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.4, delay: 0.3 }}
-                  >
+                    transition={{ duration: 0.4, delay: 0.3 }}>
                     {item.answer}
                   </motion.p>
                 </motion.div>
@@ -211,15 +209,17 @@ const FAQItem = ({
         </AnimatePresence>
       </Card>
     </motion.div>
-  )
-}
+  );
+};
 
-export default function FAQPage({ onBack }: FAQPageProps) {
-  const [openItems, setOpenItems] = useState<number[]>([])
+export default function FAQPage() {
+  const [openItems, setOpenItems] = useState<number[]>([]);
 
   const toggleItem = (index: number) => {
-    setOpenItems((prev) => (prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]))
-  }
+    setOpenItems((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  };
 
   return (
     <motion.div
@@ -227,8 +227,7 @@ export default function FAQPage({ onBack }: FAQPageProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+      transition={{ duration: 0.5 }}>
       {Array.from({ length: 20 }).map((_, i) => (
         <FloatingParticle key={i} delay={i * 0.5} />
       ))}
@@ -253,14 +252,12 @@ export default function FAQPage({ onBack }: FAQPageProps) {
           className="text-center mb-12"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
+          transition={{ duration: 0.8, ease: "easeOut" }}>
           <motion.div
             className="flex items-center justify-center gap-3 mb-4"
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+            transition={{ duration: 0.6, delay: 0.2 }}>
             <motion.div
               animate={{
                 rotate: [0, 15, -15, 0],
@@ -270,16 +267,14 @@ export default function FAQPage({ onBack }: FAQPageProps) {
                 duration: 4,
                 repeat: Number.POSITIVE_INFINITY,
                 ease: "easeInOut",
-              }}
-            >
+              }}>
               <HelpCircle className="w-8 h-8 text-green-400" />
             </motion.div>
             <motion.h1
               className="text-4xl font-bold text-green-400"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
+              transition={{ duration: 0.6, delay: 0.4 }}>
               Frequently Asked Questions
             </motion.h1>
             <motion.div
@@ -291,8 +286,7 @@ export default function FAQPage({ onBack }: FAQPageProps) {
                 duration: 3,
                 repeat: Number.POSITIVE_INFINITY,
                 ease: "linear",
-              }}
-            >
+              }}>
               <Sparkles className="w-6 h-6 text-green-400" />
             </motion.div>
           </motion.div>
@@ -300,9 +294,9 @@ export default function FAQPage({ onBack }: FAQPageProps) {
             className="text-gray-400 text-lg max-w-2xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
-            Everything you need to know about creating and managing tokens with Splash
+            transition={{ duration: 0.6, delay: 0.6 }}>
+            Everything you need to know about creating and managing tokens with
+            Splash
           </motion.p>
         </motion.div>
 
@@ -321,5 +315,5 @@ export default function FAQPage({ onBack }: FAQPageProps) {
         {/* Bottom CTA */}
       </div>
     </motion.div>
-  )
+  );
 }
