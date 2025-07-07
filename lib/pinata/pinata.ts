@@ -13,5 +13,6 @@ export const pinFileToIPFS = async (file: File): Promise<string> => {
   const json = await res.json();
   if (!res.ok) throw new Error(json.error || "Failed to upload file to IPFS");
 
-  return `ipfs://${json.IpfsHash}`;
+  const cid = json.IpfsHash;
+  return cid;
 };
