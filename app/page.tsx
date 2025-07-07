@@ -61,13 +61,29 @@ export default function Home() {
         console.log(`ipfs://${cid}`);
       }
 
+      const metadataJson = {
+        name: data.name,
+        symbol: data.symbol,
+        description: `A utility token called ${data.name}`,
+        image: `https://gateway.pinata.cloud/ipfs/${cid}`,
+        external_url: "", // or your custom site
+      };
+
+      const blob = new Blob([JSON.stringify(metadataJson)], {
+        type: "application/json",
+      });
+      const file = new File([blob], "metadata.json");
+      const metadataCid = await pinFileToIPFS(file);
+
+      const metadataUri = `https://gateway.pinata.cloud/ipfs/${metadataCid}`;
+
       const mintKeypair = Keypair.generate();
 
       const metadata: TokenMetadata = {
         mint: mintKeypair.publicKey,
         name: data.name,
         symbol: data.symbol,
-        uri: "https://cdn.100xdevs.com/metadata.json",
+        uri: metadataUri,
         additionalMetadata: [],
       };
 
@@ -124,33 +140,44 @@ export default function Home() {
       await wallet.sendTransaction(transaction, connection);
       console.log(`Token mint created at ${mintKeypair.publicKey.toBase58()}`);
       const associatedToken = getAssociatedTokenAddressSync(
-            mintKeypair.publicKey,
-            wallet.publicKey,
-            false,
-            TOKEN_2022_PROGRAM_ID,
-        );
+        mintKeypair.publicKey,
+        wallet.publicKey,
+        false,
+        TOKEN_2022_PROGRAM_ID
+      );
 
-        console.log(associatedToken.toBase58());
+      console.log(associatedToken.toBase58());
 
-        const transaction2 = new Transaction().add(
-            createAssociatedTokenAccountInstruction(
-                wallet.publicKey,
-                associatedToken,
-                wallet.publicKey,
-                mintKeypair.publicKey,
-                TOKEN_2022_PROGRAM_ID,
-            ),
-        );
+      const transaction2 = new Transaction().add(
+        createAssociatedTokenAccountInstruction(
+          wallet.publicKey,
+          associatedToken,
+          wallet.publicKey,
+          mintKeypair.publicKey,
+          TOKEN_2022_PROGRAM_ID
+        )
+      );
 
-        await wallet.sendTransaction(transaction2, connection);
+      await wallet.sendTransaction(transaction2, connection);
 
-        const transaction3 = new Transaction().add(
-            createMintToInstruction(mintKeypair.publicKey, associatedToken, wallet.publicKey, 1000000000, [], TOKEN_2022_PROGRAM_ID)
-        );
+      const transaction3 = new Transaction().add(
+        createMintToInstruction(
+          mintKeypair.publicKey,
+          associatedToken,
+          wallet.publicKey,
+          BigInt(data.supply),
+          [],
+          TOKEN_2022_PROGRAM_ID
+        )
+      );
 
-        await wallet.sendTransaction(transaction3, connection);
+      await wallet.sendTransaction(transaction3, connection);
 
-        console.log("Minted!")
+      const actualSupply = data.supply / Math.pow(10, data.decimals);
+      console.log(
+        `Minted ${actualSupply} tokens to:`,
+        associatedToken.toBase58()
+      );
     } catch (err) {
       console.log("Error!!!", err);
     }
