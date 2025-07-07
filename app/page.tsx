@@ -11,6 +11,7 @@ import { LaunchFormInputs, launchFormSchema } from "@/lib/utils/validators";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useState } from "react";
 import { launchToken } from "@/lib/solana/tokenService";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +20,8 @@ export default function Home() {
     mintAddress: string;
     tokenAccount: string;
   } | null>(null);
+
+  const router = useRouter();
 
   const {
     register,
@@ -45,6 +48,11 @@ export default function Home() {
       const result = await launchToken(data, connection, wallet);
 
       setSuccess(result);
+      router.push(
+        `/splashsuccess?name=${encodeURIComponent(data.name)}&mintAddress=${
+          result.mintAddress
+        }&tokenAccount=${result.tokenAccount}`
+      );
       console.log("Token launched successfully:", result);
       reset();
     } catch (err) {
