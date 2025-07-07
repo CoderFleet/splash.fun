@@ -8,38 +8,23 @@ import { Label } from "@/components/ui/label";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LaunchFormInputs, launchFormSchema } from "@/lib/utils/validators";
-import { pinFileToIPFS } from "@/lib/pinata/pinata";
-import { Keypair, SystemProgram, Transaction } from "@solana/web3.js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import {
-  createAccount,
-  createAssociatedTokenAccountInstruction,
-  createInitializeMetadataPointerInstruction,
-  createInitializeMint2Instruction,
-  createInitializeMintInstruction,
-  createMintToInstruction,
-  ExtensionType,
-  getAssociatedTokenAddressSync,
-  getMinimumBalanceForRentExemptMint,
-  getMintLen,
-  LENGTH_SIZE,
-  MINT_SIZE,
-  TOKEN_2022_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-  TYPE_SIZE,
-} from "@solana/spl-token";
-import {
-  createInitializeInstruction,
-  pack,
-  TokenMetadata,
-} from "@solana/spl-token-metadata";
+import { useState } from "react";
+import { launchToken } from "@/lib/solana/tokenService";
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<{
+    mintAddress: string;
+    tokenAccount: string;
+  } | null>(null);
+
   const {
     register,
     handleSubmit,
     control,
-    setValue,
+    reset,
     formState: { errors },
   } = useForm<LaunchFormInputs>({
     resolver: zodResolver(launchFormSchema),
@@ -49,137 +34,28 @@ export default function Home() {
   const wallet = useWallet();
 
   const onSubmit = async (data: LaunchFormInputs) => {
-    console.log("Valid Form Data:", data);
+    // console.log("Valid Form Data:", data);
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
 
     try {
-      console.log("Form data:", data);
+      console.log("Valid Form Data:", data);
 
-      let cid = "";
-      if (data.image) {
-        cid = await pinFileToIPFS(data.image);
-        console.log(`https://gateway.pinata.cloud/ipfs/${cid}`);
-        console.log(`ipfs://${cid}`);
-      }
+      const result = await launchToken(data, connection, wallet);
 
-      const metadataJson = {
-        name: data.name,
-        symbol: data.symbol,
-        description: `A utility token called ${data.name}`,
-        image: `https://gateway.pinata.cloud/ipfs/${cid}`,
-        external_url: "", // or your custom site
-      };
-
-      const blob = new Blob([JSON.stringify(metadataJson)], {
-        type: "application/json",
-      });
-      const file = new File([blob], "metadata.json");
-      const metadataCid = await pinFileToIPFS(file);
-
-      const metadataUri = `https://gateway.pinata.cloud/ipfs/${metadataCid}`;
-
-      const mintKeypair = Keypair.generate();
-
-      const metadata: TokenMetadata = {
-        mint: mintKeypair.publicKey,
-        name: data.name,
-        symbol: data.symbol,
-        uri: metadataUri,
-        additionalMetadata: [],
-      };
-
-      const mintLen = getMintLen([ExtensionType.MetadataPointer]);
-      const metadataLen = TYPE_SIZE + LENGTH_SIZE + pack(metadata).length;
-
-      const lamports = await connection.getMinimumBalanceForRentExemption(
-        mintLen + metadataLen
-      );
-
-      if (!wallet.publicKey) {
-        throw new Error("Wallet not connected");
-      }
-
-      const transaction = new Transaction().add(
-        SystemProgram.createAccount({
-          fromPubkey: wallet.publicKey,
-          newAccountPubkey: mintKeypair.publicKey,
-          space: mintLen,
-          lamports,
-          programId: TOKEN_2022_PROGRAM_ID,
-        }),
-        createInitializeMetadataPointerInstruction(
-          mintKeypair.publicKey,
-          wallet.publicKey,
-          mintKeypair.publicKey,
-          TOKEN_2022_PROGRAM_ID
-        ),
-        createInitializeMintInstruction(
-          mintKeypair.publicKey,
-          data.decimals,
-          wallet.publicKey,
-          null,
-          TOKEN_2022_PROGRAM_ID
-        ),
-        createInitializeInstruction({
-          programId: TOKEN_2022_PROGRAM_ID,
-          mint: mintKeypair.publicKey,
-          metadata: mintKeypair.publicKey,
-          name: metadata.name,
-          symbol: metadata.symbol,
-          uri: metadata.uri,
-          mintAuthority: wallet.publicKey,
-          updateAuthority: wallet.publicKey,
-        })
-      );
-
-      transaction.feePayer = wallet.publicKey;
-      transaction.recentBlockhash = (
-        await connection.getLatestBlockhash()
-      ).blockhash;
-      transaction.partialSign(mintKeypair);
-
-      await wallet.sendTransaction(transaction, connection);
-      console.log(`Token mint created at ${mintKeypair.publicKey.toBase58()}`);
-      const associatedToken = getAssociatedTokenAddressSync(
-        mintKeypair.publicKey,
-        wallet.publicKey,
-        false,
-        TOKEN_2022_PROGRAM_ID
-      );
-
-      console.log(associatedToken.toBase58());
-
-      const transaction2 = new Transaction().add(
-        createAssociatedTokenAccountInstruction(
-          wallet.publicKey,
-          associatedToken,
-          wallet.publicKey,
-          mintKeypair.publicKey,
-          TOKEN_2022_PROGRAM_ID
-        )
-      );
-
-      await wallet.sendTransaction(transaction2, connection);
-
-      const transaction3 = new Transaction().add(
-        createMintToInstruction(
-          mintKeypair.publicKey,
-          associatedToken,
-          wallet.publicKey,
-          BigInt(data.supply),
-          [],
-          TOKEN_2022_PROGRAM_ID
-        )
-      );
-
-      await wallet.sendTransaction(transaction3, connection);
-
-      const actualSupply = data.supply / Math.pow(10, data.decimals);
-      console.log(
-        `Minted ${actualSupply} tokens to:`,
-        associatedToken.toBase58()
-      );
+      setSuccess(result);
+      console.log("Token launched successfully:", result);
+      reset();
     } catch (err) {
-      console.log("Error!!!", err);
+      console.error("Error launching token:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "An error occurred";
+      setError(errorMessage);
+      reset();
+    } finally {
+      reset();
+      setIsLoading(false);
     }
   };
   return (
@@ -296,10 +172,11 @@ export default function Home() {
           {/* Launch Button */}
           <Button
             type="submit"
+            disabled={isLoading}
             className="w-full relative bg-black border-2 border-transparent p-[2px] rounded-full overflow-hidden group hover:scale-105 transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-green-500 to-pink-500 animate-pulse"></div>
             <span className="relative bg-black text-white font-semibold py-5 px-6 rounded-full w-full block group-hover:bg-gray-900 transition-colors duration-300 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:via-green-400 group-hover:to-pink-400">
-              LAUNCH MY TOKEN
+              {isLoading ? "LAUNCHING..." : "LAUNCH MY TOKEN"}
             </span>
           </Button>
         </form>
