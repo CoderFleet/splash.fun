@@ -84,8 +84,7 @@ export default function Home() {
             <div className="space-y-4">
               <div className="text-8xl font-bold text-white">L</div>
               <p className="text-2xl text-gray-400 font-light">
-                No KYC. No Lambo. Just splash.
-              </p>
+lklklkllkkklklklklkklkl              </p>
             </div>
           </div>
           <MintActivities />
